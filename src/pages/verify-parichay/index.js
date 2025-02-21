@@ -60,30 +60,37 @@ const VerifyParichay = ({ data }) => {
 	useEffect(() => {
 
 		const callApi = async () => {
-			if (data) {
+			if (data?.token) {
 				const response = await axios.get(
-					`/userDetail?userName=${encryptDataGet(data?.allData?.userid ?? data?.allData?.user_id)}`
-				);
+					`/userDetail?token=${data?.token}`
+				).then(response => {
+					console.log('response', response)
+					let originalText = decryptData(response?.data?.data);
+					console.log('originalText', originalText)
+					dispatch(fetchLoginSuccess(originalText));
+					// let newdata = {
+					// 	"id": data?.allData?.id || 0,
+					// 	"employeeNumber": null,
+					// 	"employeeName": data?.email ||"",
+					// 	"divisionCode": null,
+					// 	"divisionName": null,
+					// 	"subDivisionCode": null,
+					// 	"subDivisionName": null,
+					// 	"username": data?.allData?.userid || data?.allData?.user_id,
+					// 	"employeeType": "",
+					// 	"roles": []
+					// }
+					// saveToken(newdata);
 
-				let originalText = decryptData(response?.data?.data);
-				console.log('originalText', originalText)
-				dispatch(fetchLoginSuccess(originalText));
-				// let newdata = {
-				// 	"id": data?.allData?.id || 0,
-				// 	"employeeNumber": null,
-				// 	"employeeName": data?.email ||"",
-				// 	"divisionCode": null,
-				// 	"divisionName": null,
-				// 	"subDivisionCode": null,
-				// 	"subDivisionName": null,
-				// 	"username": data?.allData?.userid || data?.allData?.user_id,
-				// 	"employeeType": "",
-				// 	"roles": []
-				// }
-				// saveToken(newdata);
+					saveToken(originalText);
+					router.push("/dashboard");
+				}).catch(error => {
+					console.log("error", error)
+					alert(error?.response?.data?.message || "Something went wrong")
+					router.push("/login");
+					console.log('error', error)
+				})
 
-				saveToken(originalText);
-				router.push("/dashboard");
 			}
 		}
 		callApi()
@@ -105,7 +112,7 @@ const VerifyParichay = ({ data }) => {
 			<Typography style={{ fontSize: 28 }} textAlign={"center"}>
 				We are verifying your details
 			</Typography>
-			<LinearProgress variant="solid" />
+			<LinearProgress variant="indeterminate" />
 		</Box>
 	)
 }
